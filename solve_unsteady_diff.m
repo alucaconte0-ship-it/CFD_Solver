@@ -1,17 +1,19 @@
 function u = solve_unsteady_diff(uinitial, Lx, Ly, Mx, My, nu, maxIter, dt, xperiodic, yperiodic, tBC, bBC, lBC, rBC, showplot, varargin)
 %Check inputs are correct format
-if Lx <= 0 || Ly <= 0
-    error("Dimensions must be positive")
-end
-if mod(Mx, 1) ~= 0
-    error("Mx must be an integer")
-end
-if mod(My, 1) ~= 0
-    error("My must be an integer")
-end
-if dt <= 0
-    error("dt must be positive")
-end
+inputs = [Lx, Ly, Mx, My, nu, maxIter, dt, xperiodic, yperiodic, tBC, bBC, lBC, rBC, showplot];
+classes = {'numeric'};
+attributes = {'size',[1,14]};
+validateattributes(inputs, classes, attributes)
+validateattributes(Lx, classes, {'scalar','positive'})
+validateattributes(Ly, classes, {'scalar','positive'})
+validateattributes(dt, classes, {'scalar','positive'})
+validateattributes(Mx, classes, {'scalar','integer','>=',3})
+validateattributes(My, classes, {'scalar','integer','>=',3})
+validateattributes(nu, classes, {'scalar','positive'})
+validateattributes(maxIter, classes, {'scalar','integer','nonnegative'})
+validateattributes(xperiodic, classes, {'scalar','binary'}) %must be 1 or 0
+validateattributes(yperiodic, classes, {'scalar','binary'})
+validateattributes(showplot, classes, {'scalar','binary'})
 %define dx and dy
 dx = Lx/(Mx - 1);
 dy = Ly/(My - 1);
@@ -29,10 +31,20 @@ end
 %Loop over all timesteps
 for it = 1:maxIter
     %Enforce Boundary Conditions
-    u(1,:)   = lBC;  % Left boundary
-    u(end,:) = rBC;  % Right boundary
-    u(:,1)   = bBC;  % Bottom boundary
-    u(:,end) = tBC;  % Top boundary
+    if xperiodic == true  %xperiodic = 1 — roll the rectangle into a cylinder left-to-right.
+        u(1,:) = u(end-1,:); 
+        u(end,:) = u(2,:);
+    else
+        u(1,:)   = lBC;  % Left boundary
+        u(end,:) = rBC;  % Right boundary
+    end
+    if yperiodic ==true %yperiodic = 1 — roll it into a cylinder top-to-bottom.
+        u(:,1) = u(:,end-1);
+        u(:,end) = u(:,2);
+    else
+        u(:,1)   = bBC;  % Bottom boundary
+        u(:,end) = tBC;  % Top boundary
+    end
     %Set u at next timestep (un) to include boundary values
     utp1 = u;
     %Loop over all points and update un from 5 point stencil of u values
