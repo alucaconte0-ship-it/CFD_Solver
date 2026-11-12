@@ -1,0 +1,246 @@
+function [U,V,P] = navier_stokes_2d(Lx,Ly,Mx,My,nu,dt,maxIter,rho,lidVelocity,pressureIter)
+% NAVIER_STOKES_2D  Incompressible 2-D lid-driven cavity flow.
+%
+% [U,V,P] = navier_stokes_2d(Lx,Ly,Mx,My,nu,dt,maxIter, ...
+%                           rho,lidVelocity,pressureIter)
+%
+% Solves the constant-density, laminar Navier-Stokes equations in a
+% rectangular, closed cavity. The top wall moves at lidVelocity (m/s),
+% while the other walls are stationary. No-slip walls are assumed.
+%
+% METHOD
+%   Finite differences on a staggered (MAC) grid:
+%   - u on vertical cell faces, v on horizontal cell faces
+%   - pressure at cell centres
+%   - explicit momentum prediction with first-order upwind advection
+%   - pressure Poisson solve with successive over-relaxation (SOR)
+%   - projection to approximately enforce zero velocity divergence
+%
+% OUTPUTS
+%   U,V,P: Mx-by-My matrices at grid nodes, for use with the app.
+%   The underlying staggered velocities and cell-centre pressure are
+%   interpolated to nodes for plotting. These returned node values are
+%   for VISUALISATION; use face velocities for a discrete divergence test.
+%
+% NOTE
+%   An educational laminar cavity solver, not a general-purpose CFD tool.
+%   Verify timestep, pressure convergence and grid independence before
+%   interpreting numerical results. Pressure accuracy depends on the
+%   projection and wall discretisation.
+
+    % Validate parameters before allocating arrays.
+    validateattributes(Lx,{'numeric'},{'scalar','real','finite','positive'});
+    validateattributes(Ly,{'numeric'},{'scalar','real','finite','positive'});
+    validateattributes(Mx,{'numeric'},{'scalar','real','finite','integer','>=',3});
+    validateattributes(My,{'numeric'},{'scalar','real','finite','integer','>=',3});
+    validateattributes(nu,{'numeric'},{'scalar','real','finite','positive'});
+    validateattributes(dt,{'numeric'},{'scalar','real','finite','positive'});
+    validateattributes(maxIter,{'numeric'},{'scalar','real','finite','integer','nonnegative'});
+    validateattributes(rho,{'numeric'},{'scalar','real','finite','positive'});
+    validateattributes(lidVelocity,{'numeric'},{'scalar','real','finite'});
+    validateattributes(pressureIter,{'numeric'},{'scalar','real','finite','integer','positive'});
+
+    % Mx and My describe NODE counts in the app; there is one less CELL
+    % in each direction. This is the usual staggered-grid arrangement.
+    Nx = Mx-1;
+    Ny = My-1;
+    dx = Lx/Nx;
+    dy = Ly/Ny;
+    idx2 = 1/dx^2;
+    idy2 = 1/dy^2;
+
+    % Forward-Euler diffusion must satisfy the 2-D stability bound.
+    diffNumber = nu*dt*(idx2+idy2);
+    if diffNumber > 0.5
+        error('navier_stokes_2d:UnstableTimeStep', ...
+              'Diffusion stability limit exceeded. Reduce dt.');
+    end
+
+    % Uface(i,j): x velocity at (x_i, y_{j+1/2}), Nx+1 by Ny.
+    % Vface(i,j): y velocity at (x_{i+1/2}, y_j), Nx by Ny+1.
+    % p(i,j):     pressure at cell centre, Nx by Ny.
+    Uface = zeros(Nx+1,Ny);
+    Vface = zeros(Nx,Ny+1);
+    p = zeros(Nx,Ny);
+
+    % Lid velocity is imposed by ghost values of horizontal velocity near
+    % the upper wall. Uface on the left/right walls is always zero.
+    for it = 1:maxIter
+        Us = Uface;
+        Vs = Vface;
+
+        % ---------------- X MOMENTUM PREDICTION ----------------
+        % Interior vertical faces (normal velocity at side walls = 0).
+        for i = 2:Nx
+            for j = 1:Ny
+                uc = Uface(i,j);
+
+                % Ghost-face values implement no-slip horizontal velocities
+                % at bottom (0) and top (lidVelocity).
+                if j == 1
+                    ub = -uc;
+                else
+                    ub = Uface(i,j-1);
+                end
+                if j == Ny
+                    ut = 2*lidVelocity-uc;
+                else
+                    ut = Uface(i,j+1);
+                end
+
+                lap = (Uface(i+1,j)-2*uc+Uface(i-1,j))*idx2 ...
+                    + (ut-2*uc+ub)*idy2;
+
+                % Interpolate vertical velocity to the u-face location.
+                vc = 0.25*(Vface(i-1,j)+Vface(i,j) ...
+                          +Vface(i-1,j+1)+Vface(i,j+1));
+
+                % First-order upwind derivatives for stable advection.
+                if uc >= 0
+                    dudx = (uc-Uface(i-1,j))/dx;
+                else
+                    dudx = (Uface(i+1,j)-uc)/dx;
+                end
+                if vc >= 0
+                    dudy = (uc-ub)/dy;
+                else
+                    dudy = (ut-uc)/dy;
+                end
+
+                Us(i,j) = uc + dt*(nu*lap - uc*dudx - vc*dudy);
+            end
+        end
+
+        % ---------------- Y MOMENTUM PREDICTION ----------------
+        % Interior horizontal faces (normal velocity at top/bottom = 0).
+        for i = 1:Nx
+            for j = 2:Ny
+                vc = Vface(i,j);
+
+                % Ghost-face values impose zero tangential velocity on
+                % left/right vertical walls.
+                if i == 1
+                    vl = -vc;
+                else
+                    vl = Vface(i-1,j);
+                end
+                if i == Nx
+                    vr = -vc;
+                else
+                    vr = Vface(i+1,j);
+                end
+
+                lap = (vr-2*vc+vl)*idx2 ...
+                    + (Vface(i,j+1)-2*vc+Vface(i,j-1))*idy2;
+
+                % Interpolate horizontal velocity to the v-face location.
+                uc = 0.25*(Uface(i,j-1)+Uface(i+1,j-1) ...
+                          +Uface(i,j)+Uface(i+1,j));
+
+                if uc >= 0
+                    dvdx = (vc-vl)/dx;
+                else
+                    dvdx = (vr-vc)/dx;
+                end
+                if vc >= 0
+                    dvdy = (vc-Vface(i,j-1))/dy;
+                else
+                    dvdy = (Vface(i,j+1)-vc)/dy;
+                end
+
+                Vs(i,j) = vc + dt*(nu*lap - uc*dvdx - vc*dvdy);
+            end
+        end
+
+        % Normal velocities on all cavity walls remain zero.
+        Us(1,:) = 0;
+        Us(end,:) = 0;
+        Vs(:,1) = 0;
+        Vs(:,end) = 0;
+
+        % Check advection CFL using provisional speeds. This is a simple
+        % conservative check rather than a complete stability guarantee.
+        cfl = dt*(max(abs(Us(:)))/dx + max(abs(Vs(:)))/dy);
+        if ~isfinite(cfl) || cfl > 1
+            error('navier_stokes_2d:AdvectionCFL', ...
+                  'Advection CFL exceeded 1 or velocity diverged. Reduce dt.');
+        end
+
+        % ---------------- PRESSURE PROJECTION ----------------
+        % Divergence of provisional face velocities at each cell centre.
+        divergence = (Us(2:end,:)-Us(1:end-1,:))/dx ...
+                   + (Vs(:,2:end)-Vs(:,1:end-1))/dy;
+        rhs = (rho/dt)*divergence;
+
+        % Solve laplacian(p) = rhs, with dp/dn = 0 on cavity walls.
+        % Omit neighbours outside the domain (zero outward derivative).
+        % The zero-mean RHS compatibility condition follows from the zero
+        % normal velocities on all four walls.
+        omega = 1.6;
+        for sweep = 1:pressureIter
+            for i = 1:Nx
+                for j = 1:Ny
+                    neighbourSum = 0;
+                    diagonal = 0;
+                    if i > 1
+                        neighbourSum = neighbourSum + p(i-1,j)*idx2;
+                        diagonal = diagonal + idx2;
+                    end
+                    if i < Nx
+                        neighbourSum = neighbourSum + p(i+1,j)*idx2;
+                        diagonal = diagonal + idx2;
+                    end
+                    if j > 1
+                        neighbourSum = neighbourSum + p(i,j-1)*idy2;
+                        diagonal = diagonal + idy2;
+                    end
+                    if j < Ny
+                        neighbourSum = neighbourSum + p(i,j+1)*idy2;
+                        diagonal = diagonal + idy2;
+                    end
+                    pNew = (neighbourSum-rhs(i,j))/diagonal;
+                    p(i,j) = (1-omega)*p(i,j)+omega*pNew;
+                end
+            end
+        end
+
+        % Pressure has an arbitrary additive constant; set a reference.
+        p = p-p(1,1);
+
+        % Correct face velocities with the computed pressure gradients.
+        Uface(2:Nx,:) = Us(2:Nx,:) ...
+            - (dt/rho)*(p(2:Nx,:)-p(1:Nx-1,:))/dx;
+        Vface(:,2:Ny) = Vs(:,2:Ny) ...
+            - (dt/rho)*(p(:,2:Ny)-p(:,1:Ny-1))/dy;
+        Uface(1,:) = 0;
+        Uface(end,:) = 0;
+        Vface(:,1) = 0;
+        Vface(:,end) = 0;
+    end
+
+    % ---------------- OUTPUT INTERPOLATION ----------------
+    % Convert staggered fields into Mx-by-My node arrays required by app.
+    U = zeros(Mx,My);
+    V = zeros(Mx,My);
+    P = zeros(Mx,My);
+
+    % Average adjacent face values to interior nodes.
+    U(2:Mx-1,2:My-1) = 0.5*(Uface(2:Nx,1:Ny-1) ...
+                                   +Uface(2:Nx,2:Ny));
+    V(2:Mx-1,2:My-1) = 0.5*(Vface(1:Nx-1,2:Ny) ...
+                                   +Vface(2:Nx,2:Ny));
+
+    % No slip at stationary walls; the top lid moves to the right.
+    U(2:end-1,end) = lidVelocity;
+
+    % Average the four surrounding cell-centre pressures to nodes.
+    P(2:Mx-1,2:My-1) = 0.25*(p(1:Nx-1,1:Ny-1) ...
+                                +p(2:Nx,1:Ny-1) ...
+                                +p(1:Nx-1,2:Ny) ...
+                                +p(2:Nx,2:Ny));
+    % Display-only pressure values at the outermost grid nodes.
+    P(1,:) = P(2,:);
+    P(end,:) = P(end-1,:);
+    P(:,1) = P(:,2);
+    P(:,end) = P(:,end-1);
+end
