@@ -1,84 +1,104 @@
-# CFD Solver
+# CFD Solver Apps
 
-MATLAB project developed for ME2610 to explore numerical solutions of partial differential equations using finite-difference methods.
+This repository contains two MATLAB apps:
 
-The current project contains a **2D unsteady diffusion solver** and a graphical MATLAB app for setting up and visualising diffusion simulations. A separate 2D incompressible Navier-Stokes lid-driven cavity solver is also included as an extension.
+- **unsteady_diffusion_app** - a graphical interface for the 2D unsteady diffusion solver.
+- **cfd_app** - a combined app for the 2D unsteady diffusion solver and the 2D Navier-Stokes lid-driven cavity solver.
 
-## 2D unsteady diffusion solver
+## Recommended method: install the packaged apps
 
-`solve_unsteady_diff.m` solves the two-dimensional unsteady diffusion equation
+The easiest way to run the apps is to download the packaged MATLAB app files from the main page of this repository.
 
-```text
-du/dt = nu (d2u/dx2 + d2u/dy2)
-```
+### unsteady_diffusion_app
 
-using an explicit Forward Euler time discretisation and second-order central finite differences in space. The spatial discretisation gives the standard five-point stencil.
+1. Download `Unsteady_diffusion_app.mltbx` from the repository.
+2. Open MATLAB.
+3. Double-click the downloaded `.mltbx` file, or use **Apps > Install App** and select it.
+4. Complete the installation.
+5. Open the app from the MATLAB **Apps** gallery.
 
-The solver supports:
+### cfd_app
 
-- rectangular domains defined by `Lx` and `Ly`
-- independently specified grid sizes `Mx` and `My`
-- constant Dirichlet boundary values on all four sides
-- optional periodic boundary conditions in the x and y directions
-- arbitrary `Mx x My` initial-condition arrays
-- optional plotting while the simulation runs
+1. Download `cfd_app.mltbx` from the repository.
+2. Open MATLAB.
+3. Double-click the downloaded `.mltbx` file, or use **Apps > Install App** and select it.
+4. Complete the installation.
+5. Open the app from the MATLAB **Apps** gallery.
 
-The main function is:
+> The packaged `cfd_app.mltbx` file will be added to the repository separately.
 
-```matlab
-u = solve_unsteady_diff(uinitial,Lx,Ly,Mx,My,nu,maxIter,dt, ...
-    xperiodic,yperiodic,tBC,bBC,lBC,rBC,showplot)
-```
+## If the packaged app does not work
 
-The returned matrix `u` contains the scalar field after `maxIter` time steps.
+If installation of an `.mltbx` file is unsuccessful, the apps can also be run directly from their MATLAB source files.
 
-## Unsteady diffusion app
+The easiest way to obtain all source files is:
 
-`unsteady_diffusion_app.m` provides a graphical interface for the diffusion solver. It allows the user to change the domain dimensions, grid resolution, diffusivity, time step, number of iterations and boundary conditions without editing MATLAB code directly.
+1. Click **Code** on the main GitHub repository page.
+2. Select **Download ZIP**.
+3. Extract the downloaded ZIP file.
+4. Open the extracted repository folder on your computer.
 
-Three initial conditions are currently available:
-
-- **Gaussian** - a smooth hotspot centred in the domain
-- **Single hot cell** - one central grid point is assigned the initial amplitude
-- **Uniform** - the whole domain starts at the same value
-
-The app calls `solve_unsteady_diff.m` with plotting disabled inside the solver, then displays the final solution as a filled contour plot using MATLAB's `turbo` colormap.
-
-## Repository structure
+The source files are organised as:
 
 ```text
 CFD_Solver/
 ├── README.md
-├── diffusion/
-│   ├── solve_unsteady_diff.m
-│   └── unsteady_diffusion_app.m
-└── navier_stokes/
+├── Unsteady_diffusion_app.mltbx
+├── cfd_app.mltbx                 # added separately
+├── unsteady_diffusion_app/
+│   ├── unsteady_diffusion_app.m
+│   └── solve_unsteady_diff.m
+└── cfd_app/
+    ├── cfd_app.m                 # added separately
+    ├── solve_unsteady_diff.m
     └── navier_stokes_2d.m
 ```
 
-## Running the diffusion app
+## Running unsteady_diffusion_app from source
 
-Open MATLAB and make the `diffusion` folder the current folder, then run:
+1. Open MATLAB.
+2. Navigate to the extracted `unsteady_diffusion_app` folder and set it as the MATLAB **Current Folder**.
+3. Make sure both files are present:
+   - `unsteady_diffusion_app.m`
+   - `solve_unsteady_diff.m`
+4. In the MATLAB Command Window, run:
 
 ```matlab
 unsteady_diffusion_app
 ```
 
-Alternatively, add the project folders to the MATLAB path:
+The app window should open.
+
+## Running cfd_app from source
+
+1. Open MATLAB.
+2. Navigate to the extracted `cfd_app` folder and set it as the MATLAB **Current Folder**.
+3. Make sure the following files are present:
+   - `cfd_app.m`
+   - `solve_unsteady_diff.m`
+   - `navier_stokes_2d.m`
+4. In the MATLAB Command Window, run:
 
 ```matlab
-addpath('diffusion')
-addpath('navier_stokes')
+cfd_app
 ```
 
-The diffusion app only requires the files in the `diffusion` folder.
+The CFD app window should open.
 
-## Numerical note
+> The `cfd_app.m` source file and packaged `cfd_app.mltbx` app will be added separately.
 
-Because the diffusion solver uses an explicit time-stepping scheme, the time step must be chosen small enough for numerical stability. For a uniform rectangular grid, the usual 2D stability condition is
+## MATLAB path alternative
 
-```text
-nu*dt*(1/dx^2 + 1/dy^2) <= 0.5
+If MATLAB is not currently inside the app folder, add the required folder to the MATLAB path before running the app. For example:
+
+```matlab
+addpath('path/to/unsteady_diffusion_app')
+unsteady_diffusion_app
 ```
 
-Further verification, validation and documentation will be added as the project develops.
+or:
+
+```matlab
+addpath('path/to/cfd_app')
+cfd_app
+```
