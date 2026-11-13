@@ -25,7 +25,6 @@ The easiest way to run the apps is to download the packaged MATLAB app files fro
 4. Complete the installation.
 5. Open the app from the MATLAB **Apps** gallery.
 
-> The packaged `cfd_app.mltbx` file will be added to the repository separately.
 
 ## If the packaged app does not work
 
