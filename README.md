@@ -28,30 +28,8 @@ The easiest way to run the apps is to download the packaged MATLAB app files fro
 
 ## If the packaged app does not work
 
-If installation of an `.mltbx` file is unsuccessful, the apps can also be run directly from their MATLAB source files.
+If installation of an `.mltbx` file is unsuccessful, the apps can also be run directly from their MATLAB source files in this ZIP.
 
-The easiest way to obtain all source files is:
-
-1. Click **Code** on the main GitHub repository page.
-2. Select **Download ZIP**.
-3. Extract the downloaded ZIP file.
-4. Open the extracted repository folder on your computer.
-
-The source files are organised as:
-
-```text
-CFD_Solver/
-├── README.md
-├── Unsteady_diffusion_app.mltbx
-├── cfd_app.mltbx                 # added separately
-├── unsteady_diffusion_app/
-│   ├── unsteady_diffusion_app.m
-│   └── solve_unsteady_diff.m
-└── cfd_app/
-    ├── cfd_app.m                 # added separately
-    ├── solve_unsteady_diff.m
-    └── navier_stokes_2d.m
-```
 
 ## Running unsteady_diffusion_app from source
 
@@ -84,20 +62,6 @@ cfd_app
 
 The CFD app window should open.
 
-> The `cfd_app.m` source file and packaged `cfd_app.mltbx` app will be added separately.
-
 ## MATLAB path alternative
 
-If MATLAB is not currently inside the app folder, add the required folder to the MATLAB path before running the app. For example:
-
-```matlab
-addpath('path/to/unsteady_diffusion_app')
-unsteady_diffusion_app
-```
-
-or:
-
-```matlab
-addpath('path/to/cfd_app')
-cfd_app
-```
+If MATLAB is not currently inside the app folder, add the required folder to the MATLAB path before running the app by right clicking on the folder and selecting "add to path".
