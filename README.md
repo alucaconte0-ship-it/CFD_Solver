@@ -27,11 +27,7 @@ If you are unable to install and run the packaged app, the application can also 
    - `cfd_app.m`
    - `solve_unsteady_diff.m`
    - `navier_stokes_2d.m`
-4. In the MATLAB Command Window, run:
-
-```matlab
-cfd_app
-```
+4. In the MATLAB Command Window, run `cfd_app` or click **Run** while in the **Editor** tab.  
 
 The application window should open.
 
