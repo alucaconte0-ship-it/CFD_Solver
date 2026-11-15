@@ -35,12 +35,6 @@ cfd_app
 
 The application window should open.
 
-## MATLAB path alternative
-
-If MATLAB is not currently inside the `cfd_app` folder, add the folder to the MATLAB path before running the application.
-
-This can be done by right-clicking the folder in MATLAB and selecting **Add to Path**.
-
 ## Solver options
 
 ### 2D Diffusion
