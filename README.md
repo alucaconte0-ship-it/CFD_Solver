@@ -19,10 +19,10 @@ The easiest way to run the program is to install the packaged MATLAB app.
 
 ## Running from source
 
-If installation of the packaged app is unsuccessful, the application can also be run directly from the MATLAB source files.
+If you are unable to install and run the packaged app, the application can also be run directly from the MATLAB source files.
 
 1. Open MATLAB.
-2. Navigate to the extracted `cfd_app` folder and set it as the MATLAB **Current Folder**.
+2. Navigate to the extracted `cfd_app` folder and set it as the MATLAB **Current Folder** or right click and select **add to path**.
 3. Make sure the following files are present:
    - `cfd_app.m`
    - `solve_unsteady_diff.m`
