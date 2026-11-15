@@ -1,23 +1,15 @@
-# CFD Solver Apps
+# CFD Solver App
 
-This repository contains two MATLAB apps:
+This repository contains a MATLAB application for:
 
-- **unsteady_diffusion_app** - a graphical interface for the 2D unsteady diffusion solver.
-- **cfd_app** - a combined app for the 2D unsteady diffusion solver and the 2D Navier-Stokes lid-driven cavity solver.
+- 2D unsteady diffusion
+- 2D incompressible Navier–Stokes lid-driven cavity flow
 
-## Recommended method: install the packaged apps
+The app provides a graphical interface for entering simulation parameters, selecting the solver and visualising the numerical result.
 
-The easiest way to run the apps is to download the packaged MATLAB app files from the main page of this repository.
+## Recommended method: install the packaged app
 
-### unsteady_diffusion_app
-
-1. Download `Unsteady_diffusion_app.mltbx` from the repository.
-2. Open MATLAB.
-3. Double-click the downloaded `.mltbx` file, or use **Apps > Install App** and select it.
-4. Complete the installation.
-5. Open the app from the MATLAB **Apps** gallery.
-
-### cfd_app
+The easiest way to run the program is to install the packaged MATLAB app.
 
 1. Download `cfd_app.mltbx` from the repository.
 2. Open MATLAB.
@@ -25,28 +17,9 @@ The easiest way to run the apps is to download the packaged MATLAB app files fro
 4. Complete the installation.
 5. Open the app from the MATLAB **Apps** gallery.
 
+## Running from source
 
-## If the packaged app does not work
-
-If installation of an `.mltbx` file is unsuccessful, the apps can also be run directly from their MATLAB source files in this ZIP.
-
-
-## Running unsteady_diffusion_app from source
-
-1. Open MATLAB.
-2. Navigate to the extracted `unsteady_diffusion_app` folder and set it as the MATLAB **Current Folder**.
-3. Make sure both files are present:
-   - `unsteady_diffusion_app.m`
-   - `solve_unsteady_diff.m`
-4. In the MATLAB Command Window, run:
-
-```matlab
-unsteady_diffusion_app
-```
-
-The app window should open.
-
-## Running cfd_app from source
+If installation of the packaged app is unsuccessful, the application can also be run directly from the MATLAB source files.
 
 1. Open MATLAB.
 2. Navigate to the extracted `cfd_app` folder and set it as the MATLAB **Current Folder**.
@@ -60,8 +33,41 @@ The app window should open.
 cfd_app
 ```
 
-The CFD app window should open.
+The application window should open.
 
 ## MATLAB path alternative
 
-If MATLAB is not currently inside the app folder, add the required folder to the MATLAB path before running the app by right clicking on the folder and selecting "add to path".
+If MATLAB is not currently inside the `cfd_app` folder, add the folder to the MATLAB path before running the application.
+
+This can be done by right-clicking the folder in MATLAB and selecting **Add to Path**.
+
+## Solver options
+
+### 2D Diffusion
+
+The diffusion mode solves the 2D unsteady diffusion equation using the `solve_unsteady_diff` function.
+
+The user can define:
+
+- domain dimensions
+- grid resolution
+- diffusivity
+- timestep and number of timesteps
+- fixed or periodic boundary conditions
+- initial condition
+
+### 2D Navier–Stokes
+
+The Navier–Stokes mode solves a 2D incompressible lid-driven cavity flow using the `navier_stokes_2d` function.
+
+The user can define:
+
+- domain dimensions
+- grid resolution
+- kinematic viscosity
+- timestep and number of timesteps
+- fluid density
+- lid velocity
+- number of pressure iterations
+
+The result is displayed as velocity magnitude with velocity vectors overlaid.
