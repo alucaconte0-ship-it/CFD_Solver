@@ -5,7 +5,7 @@ This repository contains a MATLAB application for:
 - 2D unsteady diffusion
 - 2D incompressible Navier–Stokes lid-driven cavity flow
 
-The app provides a graphical interface for entering simulation parameters, selecting the solver and visualising the numerical result.
+The app provides a GUI for these two functions.
 
 ## Recommended method: install the packaged app
 
