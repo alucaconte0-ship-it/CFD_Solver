@@ -1,4 +1,4 @@
-# CFD Solver App
+# 2D Unsteady Diffusion and 2D Navier Stokes Solver
 
 This repository contains a MATLAB application for:
 
