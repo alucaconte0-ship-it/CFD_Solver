@@ -60,4 +60,4 @@ The user can define:
 - lid velocity
 - number of pressure iterations
 
-The result is displayed as velocity magnitude with velocity vectors overlaid.
+The result is displayed as velocity magnitude with velocity vectors overlaid. It can also be viewed in a matrix view, selecting velocity magnitude, U velocity, V velocity or Pressure
